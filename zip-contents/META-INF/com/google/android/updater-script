@@ -1,0 +1,40 @@
+assert(getprop("ro.product.device") == "grouper" || getprop("ro.build.product") == "grouper" || getprop("ro.product.device") == "tilapia" || getprop("ro.build.product") == "tilapia" || abort("This package is for \"grouper\" and \"tilapia\" devices; this is a \"" + getprop("ro.product.device") + "\"."););
+
+#
+# Put your messages here, if you wish.
+#
+
+ui_print("");
+ui_print("Starting agnostic-kernel-flasher created by");
+ui_print("Frantisek Nesveda");
+ui_print("");
+
+ui_print("Unpacking files...");
+package_extract_dir("tools", "/tmp/agnostic-kernel/tools/");
+set_perm_recursive(0, 0, 0755, 0755, "/tmp/agnostic-kernel/tools/");
+package_extract_dir("fstab", "/tmp/agnostic-kernel/fstab/");
+package_extract_file("boot.img", "/tmp/agnostic-kernel/boot.img");
+set_progress(0.2);
+
+ui_print("Running script to modify and flash boot.img...");
+ifelse(run_program("/tmp/agnostic-kernel/tools/repack-and-flash.sh") == "0",
+(
+	set_progress(0.9);
+
+	ui_print("Cleaning up...");
+	delete_recursive("/tmp/agnostic-kernel");
+	set_progress(1.0);
+
+	#
+	# Put your kernel modification script here, if you wish.
+	#
+
+	ui_print("Done, please reboot.");
+),
+(
+	ui_print("Cleaning up...");
+	delete_recursive("/tmp/agnostic-kernel");
+	set_progress(1.0);
+	abort("There was an error while flashing the kernel.");
+));
+
